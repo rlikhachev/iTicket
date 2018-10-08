@@ -1,0 +1,28 @@
+@startuml
+scale 700 width
+[*] --> New : create ticket (author)
+state New {
+  [*] --> Assigned : set actor (auto)
+}
+state Assigned {
+  [*] --> Processed : takes ticket to process (actor)
+}
+state Processed {
+  [*] --> Done : ticket done (actor)
+  [*] --> Canceled : ticket canceled (actor)
+}
+state Done {
+  [*] --> Closed : ticket closed (author)
+  [*] --> Reopen : ticket reopened (author)
+}
+state Canceled {
+  [*] --> Reopen : ticket reopened (author)
+  [*] --> Closed : ticket closed (author)
+}
+state Closed {
+  [*] --> Reopen : ticket reopened (author)
+}
+state Reopen {
+  [*] --> Assigned : ticket reopened (author)
+}
+@enduml

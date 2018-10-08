@@ -1,0 +1,12 @@
+@startuml
+ClassTicket <|-- ClassModelsModel
+ClassTicketHistory <|-- ClassModelsModel
+ClassTicketHistory --|> ClassTicket : FK ticket
+ClassUser <|-- ClassAbstractUser
+ClassAbstractUser <|-- ClassModelsModel
+ClassToken  <|-- ClassModelsModel
+ClassUser <|-- ClassToken : FK user
+ClassUser <|-- ClassTicket : FK author
+ClassUser <|-- ClassTicket : FK actor
+@enduml
+

@@ -1,0 +1,6 @@
+.idea
+.idea/*
+public/*
+postgres/*
+__pycache__/*
+*.pyc

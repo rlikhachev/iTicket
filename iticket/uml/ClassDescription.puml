@@ -1,0 +1,34 @@
+@startuml
+class Ticket {
+    Класс Тикет
+    ..
+    title : Заголовок тикета
+    description: Описание тикета
+    state: Состояние тикета
+    author: Автор тикета
+    actor: Назначенный исполнитель
+    created_at: Дата создания
+    updated_at: Дата обнволения
+}
+class TicketHistory{
+    Класс для хранения истории изменения состояний тикета
+    ..
+    ticket: Тикет
+    ticket_state: Состояние тикета в момент создания записи
+    created_at: Дата создания
+}
+
+class User {
+    Класс пользователя
+    ..
+    username: имя пользователя (login)
+    password: пароль
+}
+class Token {
+    Класс Токен атворизации
+    ..
+    user: пользователь
+    token: токен атворизации
+}
+@enduml
+

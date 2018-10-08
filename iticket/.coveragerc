@@ -1,0 +1,9 @@
+[run]
+
+include=
+    app/*
+    ticket/*
+    user/*
+
+omit=
+    */migrations/*

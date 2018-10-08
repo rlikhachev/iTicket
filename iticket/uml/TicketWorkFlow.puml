@@ -1,0 +1,15 @@
+@startuml
+User1 -> Server: Authentication Request
+User1 <-- Server : Authentication Response
+User1 -> Server: Create ticket Request
+Server -> User2 : state.Assigned
+User1 <-- Server : state.Assigned  Response
+Server <- User2: Authentication Request
+Server --> User2 : Authentication Response
+Server <- User2: set ticket to process Request
+Server --> User2: state.Processed Response
+Server <- User2: set ticket to done Request
+Server --> User2: state.Done Response
+User1 -> Server: set ticket to closed Request
+User1 <-- Server: state.Closed Response
+@enduml
