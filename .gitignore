@@ -4,3 +4,4 @@ public/*
 postgres/*
 __pycache__/*
 *.pyc
+iticket/db.sqlite3
