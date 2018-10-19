@@ -45,6 +45,9 @@ class TicketTestCase(TestCase):
             self.assertTrue(response.status_code == 201 and response.data)
 
         tickets = Ticket.objects.all()
+
+        self.assertEqual(tickets.count(), 7)
+
         tickets_list = []
         for user in User.objects.exclude(id=1):
             tickets_list.append(tickets.filter(actor=user.id).count())
@@ -61,15 +64,19 @@ class TicketTestCase(TestCase):
             if user2_tickets.index(ticket) == 0:
                 response = user2.post(f'/api/tickets/{ticket.id}/process/')
                 self.assertEqual(response.status_code, 200)
+                self.assertEqual(Ticket.objects.get(id=ticket.id).state, 'processed')
+
             # try take rest tickets to process too
             else:
                 response = user2.post(f'/api/tickets/{ticket.id}/process/')
                 self.assertNotEqual(response.status_code, 200)
+                self.assertEqual(Ticket.objects.get(id=ticket.id).state, 'assigned')
 
         # test cant close not processed ticket (2)
         user2_assigned_ticket = tickets.filter(actor=2, state='assigned').first()
         response = user2.post(f'/api/tickets/{user2_assigned_ticket.id}/close/')
         self.assertNotEqual(response.status_code, 200)
+        self.assertEqual(Ticket.objects.get(id=user2_assigned_ticket.id).state, 'assigned')
 
         # test user can cancel one and then take other, set it done
 
@@ -77,39 +84,48 @@ class TicketTestCase(TestCase):
         user2_processed_ticket = tickets.filter(actor=2, state='processed').first()
         response = user2.post(f'/api/tickets/{user2_processed_ticket.id}/cancel/')
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(Ticket.objects.get(id=user2_processed_ticket.id).state, 'canceled')
 
         # try canceled set to reopen not by author (1)
         response = user2.post(f'/api/tickets/{user2_processed_ticket.id}/reopen/')
         self.assertNotEqual(response.status_code, 200)
+        self.assertEqual(Ticket.objects.get(id=user2_processed_ticket.id).state, 'canceled')
 
         # set another to processed (2)
         response = user2.post(f'/api/tickets/{user2_assigned_ticket.id}/process/')
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(Ticket.objects.get(id=user2_assigned_ticket.id).state, 'processed')
 
         # set another to processed (2)
         response = user2.post(f'/api/tickets/{user2_assigned_ticket.id}/done/')
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(Ticket.objects.get(id=user2_assigned_ticket.id).state, 'done')
 
         # try done set to close (2) by actor
         response = user2.post(f'/api/tickets/{user2_assigned_ticket.id}/close/')
         self.assertNotEqual(response.status_code, 200)
+        self.assertEqual(Ticket.objects.get(id=user2_assigned_ticket.id).state, 'done')
 
         # try done set to close (2) by author
         response = user1.post(f'/api/tickets/{user2_assigned_ticket.id}/close/')
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(Ticket.objects.get(id=user2_assigned_ticket.id).state, 'close')
 
         # try canceled set to close (1)
         response = user2.post(f'/api/tickets/{user2_processed_ticket.id}/close/')
         self.assertNotEqual(response.status_code, 200)
+        self.assertEqual(Ticket.objects.get(id=user2_assigned_ticket.id).state, 'close')
 
         # try to reopen assigned by author (user 3)
         user3_assigned_ticket = tickets.filter(actor=3, state='assigned').first()
         response = user1.post(f'/api/tickets/{user3_assigned_ticket.id}/reopen/')
         self.assertNotEqual(response.status_code, 200)
+        self.assertEqual(Ticket.objects.get(id=user3_assigned_ticket.id).state, 'assigned')
 
         # try to reopen canceled by author (1)
         response = user1.post(f'/api/tickets/{user2_processed_ticket.id}/reopen/')
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(Ticket.objects.get(id=user2_processed_ticket.id).state, 'assigned')
 
         # check amount of history items (1)
         ticket1_history_items_count = user2_processed_ticket.history.all().count()
@@ -120,23 +136,38 @@ class TicketTestCase(TestCase):
         for ticket in user2_tickets:
             response = user3.post(f'/api/tickets/{ticket.id}/process/')
             self.assertNotEqual(response.status_code, 200)
+            self.assertEqual(Ticket.objects.get(id=user2_processed_ticket.id).state, ticket.state)
             response = user3.post(f'/api/tickets/{ticket.id}/cancel/')
             self.assertNotEqual(response.status_code, 200)
+            self.assertEqual(Ticket.objects.get(id=user2_processed_ticket.id).state, ticket.state)
             response = user3.post(f'/api/tickets/{ticket.id}/done/')
             self.assertNotEqual(response.status_code, 200)
+            self.assertEqual(Ticket.objects.get(id=user2_processed_ticket.id).state, ticket.state)
             response = user3.post(f'/api/tickets/{ticket.id}/close/')
             self.assertNotEqual(response.status_code, 200)
+            self.assertEqual(Ticket.objects.get(id=user2_processed_ticket.id).state, ticket.state)
             response = user3.post(f'/api/tickets/{ticket.id}/reopen/')
             self.assertNotEqual(response.status_code, 200)
+            self.assertEqual(Ticket.objects.get(id=user2_processed_ticket.id).state, ticket.state)
 
-        date_to = timezone.now() + timezone.timedelta(days=1)
+        date_to = timezone.now() + timezone.timedelta(days=2)
 
         response = user1.get(f'/api/statistic/', {'date_to': date_to.strftime('%d.%m.%Y')})
+        data = response.__dict__['data']
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['tickets']['new']['count'], 0)
+        self.assertEqual(data['tickets']['assigned']['count'], 6)
+        self.assertEqual(data['tickets']['processed']['count'], 0)
+        self.assertEqual(data['tickets']['done']['count'], 0)
+        self.assertEqual(data['tickets']['close']['count'], 1)
+        self.assertEqual(data['tickets']['canceled']['count'], 0)
+        self.assertEqual(data['tickets']['reopen']['count'], 0)
 
         date_to = timezone.now() - timezone.timedelta(days=1)
         response = user1.get(f'/api/statistic/', {'date_to': date_to.strftime('%d.%m.%Y')})
+        data = response.__dict__['data']
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(data[:7], 'No data')
 
         response = user2.get(f'/api/statistic/', {'date_to': date_to.strftime('%d.%m.%Y')})
         self.assertNotEqual(response.status_code, 200)

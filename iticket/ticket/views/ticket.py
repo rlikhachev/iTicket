@@ -156,8 +156,17 @@ class TicketStatisticAPIView(mixins.ListModelMixin, viewsets.GenericViewSet):
         date_from = date_from.replace(tzinfo=tz(settings.TIME_ZONE))
 
         date_to = request.GET.get('date_to', None)
+        print('r',date_to)
         date_to = timezone.datetime.strptime(date_to, '%d.%m.%Y') if date_to else timezone.now()
         date_to = date_to.replace(tzinfo=tz(settings.TIME_ZONE))
+        print('l',date_to)
+        print('qs', self.queryset)
+        print('l', date_to)
+        xtask = self.queryset.first()
+        print(xtask.updated_at, date_from, date_to)
+        print('con1', xtask.updated_at > date_from)
+        print('con2', xtask.updated_at < date_to)
+        print('con3', date_to > xtask.updated_at > date_from)
         qs = self.queryset.filter(updated_at__range=(date_from, date_to))
         if actor:
             qs = self.queryset.filter(actor=actor)

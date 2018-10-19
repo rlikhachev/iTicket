@@ -8,7 +8,7 @@ class Ticket {
     author: Автор тикета
     actor: Назначенный исполнитель
     created_at: Дата создания
-    updated_at: Дата обнволения
+    updated_at: Дата обновления
 }
 class TicketHistory{
     Класс для хранения истории изменения состояний тикета
@@ -21,14 +21,14 @@ class TicketHistory{
 class User {
     Класс пользователя
     ..
-    username: имя пользователя (login)
-    password: пароль
+    username: Имя пользователя (login)
+    password: Пароль
 }
 class Token {
     Класс Токен атворизации
     ..
-    user: пользователь
-    token: токен атворизации
+    user: Пользователь
+    token: Токен атворизации
 }
 @enduml
 

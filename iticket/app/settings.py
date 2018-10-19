@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+from dotenv import load_dotenv, find_dotenv
 
+load_dotenv(find_dotenv())
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -22,12 +24,12 @@ STATIC_URL = '/static/'
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'si+3x_w3=gm@!9nz_k%y$llf(td2=h2@=09$gpm9*pt4d=^*!^'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(os.getenv('DEBUG'))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -83,22 +85,23 @@ WSGI_APPLICATION = 'app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'HOST': 'db',
-        'PORT': 5432,
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('POSTGRES_DB'),
+#         'USER': os.getenv('POSTGRES_USER'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+#         'HOST': os.getenv('POSTGRES_HOST'),
+#         'PORT': os.getenv('POSTGRES_PORT'),
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -138,27 +141,24 @@ USE_TZ = True
 
 AUTH_USER_MODEL = 'user.User'
 
-STATIC_URL = '/static/'
 
-
-TIKECKET_NEW = 0
-TIKECKET_ASSIGNED = 1
-TIKECKET_PROCESSED = 2
-TIKECKET_DONE = 3
-TIKECKET_CLOSED = 4
-TIKECKET_CANCELED = 5
-TIKECKET_REOPEN = 6
+TICKET_NEW = 0
+TICKET_ASSIGNED = 1
+TICKET_PROCESSED = 2
+TICKET_DONE = 3
+TICKET_CLOSED = 4
+TICKET_CANCELED = 5
+TICKET_REOPEN = 6
 
 TICKET_STATEMENTS = {
-    TIKECKET_NEW: 'Новый',
-    TIKECKET_ASSIGNED: 'Назначен',
-    TIKECKET_PROCESSED: 'Обрабатывается',
-    TIKECKET_DONE: 'Выполнен',
-    TIKECKET_CLOSED: 'Закрыт',
-    TIKECKET_CANCELED: 'Отменен',
-    TIKECKET_REOPEN: 'Переоткрыт',
+    TICKET_NEW: 'Новый',
+    TICKET_ASSIGNED: 'Назначен',
+    TICKET_PROCESSED: 'Обрабатывается',
+    TICKET_DONE: 'Выполнен',
+    TICKET_CLOSED: 'Закрыт',
+    TICKET_CANCELED: 'Отменен',
+    TICKET_REOPEN: 'Переоткрыт',
 }
-
 
 
 CHOICES_TICKET_STATEMENT = []
